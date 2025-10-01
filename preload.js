@@ -7,6 +7,24 @@ contextBridge.exposeInMainWorld("electronAPI", {
   showWindow: () => ipcRenderer.invoke("show-window"),
   minimizeWindow: () => ipcRenderer.invoke("minimize-window"),
   closeWindow: () => ipcRenderer.invoke("close-window"),
+  getSystemMaterialState: () => ipcRenderer.invoke("system-material:get-state"),
+  setSystemMaterial: (material) => ipcRenderer.invoke("system-material:set-material", material),
+  setSystemMaterialFeature: (enabled) => ipcRenderer.invoke("system-material:set-feature", enabled),
+  onSystemMaterialState: (callback) => {
+    const handler = (_event, payload) => callback?.(payload);
+    ipcRenderer.on("system-material:state", handler);
+    return () => ipcRenderer.removeListener("system-material:state", handler);
+  },
+  onCapsuleMetrics: (callback) => {
+    const handler = (_event, payload) => callback?.(payload);
+    ipcRenderer.on("capsule:metrics", handler);
+    return () => ipcRenderer.removeListener("capsule:metrics", handler);
+  },
+  onCapsuleTheme: (callback) => {
+    const handler = (_event, payload) => callback?.(payload);
+    ipcRenderer.on("capsule:theme", handler);
+    return () => ipcRenderer.removeListener("capsule:theme", handler);
+  },
 
   // 录音相关
   startRecording: () => ipcRenderer.invoke("start-recording"),

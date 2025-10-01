@@ -100,6 +100,17 @@ class EnvironmentManager {
     return process.env.NODE_ENV === "production";
   }
 
+  isSystemMaterialCapsuleEnabled() {
+    const flag = process.env.SYSTEM_MATERIAL_CAPSULE;
+    if (flag === "false" || flag === "0") {
+      return false;
+    }
+    if (flag === "true" || flag === "1") {
+      return true;
+    }
+    return true;
+  }
+
   getDataDirectory() {
     const appName = "蛐蛐";
     

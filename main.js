@@ -114,7 +114,10 @@ logger.info('设置用户数据目录环境变量', {
 
 // 初始化管理器
 const environmentManager = new EnvironmentManager();
-const windowManager = new WindowManager();
+const windowManager = new WindowManager({
+  environmentManager,
+  logger,
+});
 const databaseManager = new DatabaseManager();
 const clipboardManager = new ClipboardManager(logger); // 传递logger实例
 const funasrManager = new FunASRManager(logger); // 传递logger实例
