@@ -26,6 +26,18 @@ class IPCHandlers {
       return this.environmentManager.validateEnvironment();
     });
 
+    ipcMain.handle("system-material:get-state", () => {
+      return this.windowManager.getSystemMaterialState();
+    });
+
+    ipcMain.handle("system-material:set-material", (_event, material) => {
+      return this.windowManager.setSystemMaterial(material);
+    });
+
+    ipcMain.handle("system-material:set-feature", (_event, enabled) => {
+      return this.windowManager.setSystemMaterialFeature(enabled);
+    });
+
     // 录音相关
     ipcMain.handle("start-recording", async () => {
       // TODO: 实现录音开始功能

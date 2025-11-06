@@ -9,6 +9,70 @@ const isElectron = () => {
   return typeof window !== 'undefined' && window.electronAPI
 }
 
+const transparentGuard = {
+  observer: null
+}
+
+function enforceTransparentSurface() {
+  const html = document.documentElement
+  const body = document.body
+
+  if (!html || !body) {
+    return
+  }
+
+  const ensureElement = (element, name) => {
+    const styles = window.getComputedStyle(element)
+    const backgroundColor = styles.backgroundColor
+    const isTransparent = !backgroundColor || backgroundColor === 'transparent' || backgroundColor === 'rgba(0, 0, 0, 0)'
+
+    if (!isTransparent) {
+      console.warn(`[system-material] ${name} background was ${backgroundColor}, forcing transparency.`)
+      element.style.backgroundColor = 'transparent'
+      element.style.backgroundImage = 'none'
+    }
+
+    const shouldHideOverflow = document.documentElement.getAttribute('data-capsule') === 'true'
+    if (shouldHideOverflow && element === body && styles.overflow !== 'hidden') {
+      console.warn(`[system-material] body overflow reset from ${styles.overflow} to hidden.`)
+      element.style.overflow = 'hidden'
+    }
+  }
+
+  ensureElement(html, 'html')
+  ensureElement(body, 'body')
+}
+
+function setupTransparentGuard() {
+  if (transparentGuard.observer) {
+    transparentGuard.observer.disconnect()
+  }
+
+  const runEnforcement = () => enforceTransparentSurface()
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', runEnforcement, { once: true })
+  } else {
+    runEnforcement()
+  }
+
+  const observer = new MutationObserver(() => {
+    runEnforcement()
+  })
+
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['style', 'class', 'data-capsule'] })
+  if (document.body) {
+    observer.observe(document.body, { attributes: true, attributeFilter: ['style', 'class'] })
+  }
+
+  window.addEventListener('resize', runEnforcement)
+  window.addEventListener('beforeunload', () => {
+    window.removeEventListener('resize', runEnforcement)
+    observer.disconnect()
+  })
+  transparentGuard.observer = observer
+}
+
 // 错误边界组件
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -149,6 +213,8 @@ function initializeApp() {
       document.documentElement.classList.remove('dark')
     }
   })
+
+  setupTransparentGuard()
 }
 
 // 初始化应用
